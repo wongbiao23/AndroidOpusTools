@@ -29,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
         if (opusRecorderTask != null) {
           return;
         }
-        targetFilePath = "/sdcard/" + System.currentTimeMillis();
+//        targetFilePath = "/sdcard/" + System.currentTimeMillis() + ".opus";
+        targetFilePath = "/sdcard/test.opus";
         opusRecorderTask = new OpusRecorderTask(targetFilePath);
         new Thread(opusRecorderTask).start();
       }
@@ -41,6 +42,12 @@ public class MainActivity extends AppCompatActivity {
           opusRecorderTask.stop();
           opusRecorderTask = null;
         }
+      }
+    });
+    findViewById(R.id.startTest).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        OpusTools.test(getApplicationContext());
       }
     });
   }

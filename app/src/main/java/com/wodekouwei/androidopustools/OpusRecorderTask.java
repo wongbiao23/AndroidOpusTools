@@ -132,7 +132,7 @@ public class OpusRecorderTask implements Runnable {
       Log.d(TAG, "encodeSize = " + encodeSize);
       if (encodeSize > 0) {
         byte[] decodeArray = new byte[encodeSize];
-        System.arraycopy(decodeArray, 0, decodedData, 0, encodeSize);
+        System.arraycopy(decodedData, 0, decodeArray, 0, encodeSize);
         fileOpusBufferedOutputStream.write(decodeArray);
       } else {
         return;

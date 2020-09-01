@@ -90,11 +90,59 @@ static void destroyOpusEncoder
     opus_encoder_destroy(pEnc);
 }
 
+static jlong createOpusDecoder(JNIEnv * env, jobject thiz, jint sampleRate, jint channel)
+{
+    int error;
+    OpusDecoder * pOpusDec = opus_decoder_create(sampleRate, channel, &error);
+    return (jlong)pOpusDec;
+}
+
+static jint decodeOpus(JNIEnv * env, jobject thiz, jlong decoder,
+        jbyteArray encData, jbyteArray decBuf, jint frameSize)
+{
+    OpusDecoder * pOpusDec = (OpusDecoder *)decoder;
+    if (!pOpusDec || !encData || !decBuf)
+        return 0;
+
+    jbyte * pEncData = (*env)->GetByteArrayElements(env, encData, 0);
+    jsize encLen = (*env)->GetArrayLength(env, encData);
+    jbyte * pDecBuf = (*env)->GetByteArrayElements(env, decBuf, 0);
+    jsize decLen = (*env)->GetArrayLength(env, decBuf);
+
+    jshort * decoded = (jshort *)malloc((size_t)decLen);
+
+    jint res = opus_decode(pOpusDec, (unsigned char *)pEncData, encLen, decoded, frameSize, 0);
+    if (res > 0) {
+        jint i;
+        for (i = 0; i < res; i++) {
+            pDecBuf[2*i] = (jbyte)(decoded[i] & 0xFF);
+            pDecBuf[2*i+1] = (jbyte)((decoded[i] >> 8) & 0xFF);
+        }
+    }
+    free(decoded);
+    LOGE("decodeOpus %d", pDecBuf[0]);
+    (*env)->ReleaseByteArrayElements(env, encData, pEncData, 0);
+    (*env)->ReleaseByteArrayElements(env, decBuf, pDecBuf, 0);
+
+    return res > 0 ? (res * 2) : res;
+}
+
+static void destroyOpusDecoder(JNIEnv * env, jobject thiz, jlong decoder)
+{
+    OpusDecoder * pOpusDecoder = (OpusDecoder *)decoder;
+    if (!decoder) {
+        return;
+    }
+    opus_decoder_destroy(pOpusDecoder);
+}
+
 static JNINativeMethod g_methods[] = {
         {"_createOpusEncoder",  "(IIII)J", (void *) createOpusEncoder},
         {"_encodeOpus",         "(J[SI[B)I",                 (void *) encodeOpus},
         {"_destroyOpusEncoder", "(J)V",                      (void *) destroyOpusEncoder},
-
+        {"_createOpusDecoder",  "(II)J", (void *) createOpusDecoder},
+        {"_decodeOpus",         "(J[B[BI)I",                 (void *) decodeOpus},
+        {"_destroyOpusDecoder", "(J)V",                      (void *) destroyOpusDecoder},
 };
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
