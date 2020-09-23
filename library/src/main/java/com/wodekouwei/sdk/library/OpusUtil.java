@@ -16,4 +16,11 @@ public class OpusUtil {
   public static native int _decodeOpus(long dec, byte[] encData, byte[] decData, int frameSize);
 
   public static native void _destroyOpusDecoder(long dec);
+
+  public static native long _createOpusMSEncoder(int sampleRateInHz, int channel, int bitrate,
+                                               int complexity);
+
+  public static native int _encodeOpusMS(long enc, short[] buffer, int offset, byte[] encoded);
+
+  public static native void _destroyOpusMSEncoder(long enc);
 }

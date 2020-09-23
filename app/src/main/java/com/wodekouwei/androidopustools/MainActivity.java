@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     findViewById(R.id.startTest).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        OpusTools.test(getApplicationContext());
+        OpusMSTools.test(getApplicationContext());
       }
     });
   }

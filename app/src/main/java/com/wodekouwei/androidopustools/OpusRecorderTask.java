@@ -24,6 +24,9 @@ public class OpusRecorderTask implements Runnable {
   private byte[] mRemainBuf = null;
   private int mRemainSize = 0;
 
+  private boolean isSaveRawFile = false;
+  private static final String rawFileName = "/sdcard/rawOpusTest.pcm";
+
   public OpusRecorderTask(String opusAudioOpusPath) {
     this.opusAudioOpusPath = opusAudioOpusPath;
     bufferSize = AudioRecord.getMinBufferSize(Constants.DEFAULT_AUDIO_SAMPLE_RATE,
@@ -58,17 +61,30 @@ public class OpusRecorderTask implements Runnable {
     long createEncoder = 0;
     FileOutputStream fileOutputStream = null;
     BufferedOutputStream fileOpusBufferedOutputStream = null;
+    BufferedOutputStream rawBos = null;
+
     try {
+      if (isSaveRawFile) {
+        File rawFile = new File(rawFileName);
+        if (rawFile.exists()) {
+          rawFile.delete();
+        }
+        rawBos = new BufferedOutputStream(new FileOutputStream(rawFile, false));
+      }
+
       file.createNewFile();
       fileOutputStream = new FileOutputStream(file, true);
 
       fileOpusBufferedOutputStream = new BufferedOutputStream(fileOutputStream);
 
       createEncoder = OpusUtil._createOpusEncoder(Constants.DEFAULT_AUDIO_SAMPLE_RATE,
-          Constants.DEFAULT_OPUS_CHANNEL, 16, 3);
+          Constants.DEFAULT_OPUS_CHANNEL, 16, 10);
       Log.i(TAG, "bufferSize:" + bufferSize);
       while (isRecorder) {
         int curShortSize = audioRecord.read(audioBuffer, 0, bufferSize);
+        if (isSaveRawFile && curShortSize > 0) {
+          rawBos.write(audioBuffer, 0, curShortSize);
+        }
         if (curShortSize > 0 && curShortSize <= bufferSize) {
 
           encodeData(createEncoder, fileOpusBufferedOutputStream, curShortSize);
@@ -91,6 +107,9 @@ public class OpusRecorderTask implements Runnable {
       try {
         if(fileOutputStream != null) {
           fileOutputStream.close();
+        }
+        if (rawBos != null) {
+          rawBos.close();
         }
       } catch (IOException e) {
         e.printStackTrace();

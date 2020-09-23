@@ -84,7 +84,7 @@ public class OpusTools {
   }
 
   public static void decodeFile(Context context, String in, String out) {
-    int bytePerTime = 40;
+    int bytePerTime = 80;
     long decoder = OpusUtil._createOpusDecoder(sampleRate, channels);
     File output = new File(out);
     BufferedOutputStream bufferedOutputStream = null;
